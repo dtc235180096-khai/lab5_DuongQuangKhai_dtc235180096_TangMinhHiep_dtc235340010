@@ -1,0 +1,62 @@
+
+---
+- name: Configure Web Tier
+  hosts: webservers
+  become: yes
+  gather_facts: yes
+
+  tasks:
+    - name: Install common web tools
+      apt:
+        name:
+          - curl
+          - git
+          - htop
+          - vim
+        state: present
+        update_cache: yes
+        cache_valid_time: 3600
+
+    - name: Create application directory
+      file:
+        path: /opt/myapp
+        state: directory
+        owner: root
+        group: root
+        mode: '0755'
+
+    - name: Create application configuration
+      copy:
+        dest: /opt/myapp/config.env
+        content: |
+          APP_NAME=MyApplication
+          APP_ENV=production
+          APP_PORT=8080
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Create health check script
+      copy:
+        dest: /opt/myapp/health-check.sh
+        content: |
+          #!/bin/bash
+          echo "Application health check: OK"
+        owner: root
+        group: root
+        mode: '0755'
+
+- name: Setup Monitoring Tools
+  hosts: all
+  become: yes
+  gather_facts: yes
+
+  tasks:
+    - name: Install monitoring tools
+      apt:
+        name:
+          - sysstat
+          - net-tools
+        state: present
+        update_cache: yes
+        cache_valid_time: 3600
